@@ -3,7 +3,7 @@
 # FILENAME: docker_entrypoint.sh
 # FUNCTION: init_start / stop docker
 # WRITE BY: liaosnet@gbasedbt.com 2024-04-02
-# UPDATE  : 2025-02-25
+# UPDATE  : 2025-03-10
 ###########################################################
 export LANG=C
 _loginfo(){
@@ -232,7 +232,7 @@ else
         sleep 3
         DBSTATUS=$(su - gbasedbt -c "onstat -|grep 'Fast Recovery'|wc -l")
       done
-      _loginfo "Add datbase to cluster as secondary mode."
+      _loginfo "Add database to cluster as secondary mode."
       su - gbasedbt -c "onmode -d secondary ${ENVPAIRENAME}"
     fi
   fi
