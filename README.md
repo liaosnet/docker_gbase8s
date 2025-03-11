@@ -14,6 +14,11 @@ docker tag liaosnet/gbase8s:v8.8_3513x25_csdk_x64 gbase8sv8.8:3513x25_csdk_x64
 运行镜像，-p参数绑定主机端口19088到docker的9088端口上  
 ```shell
 docker run -d -p 19088:9088 \
+  --network mynetwork --ip 172.20.0.21 \
+  --name node11 --hostname node11 \
+  --mac-address F0-F0-69-F0-F0-01 \
+  --privileged=true \
+  -v /data/gbase_std:/opt/gbase/data \
   -e SERVERNAME=gbase01 \
   -e USERPASS=GBase123$% \
   -e CPUS=1 \
@@ -34,7 +39,17 @@ ADTS对应的是数据库是否开启审计：0 表示不开启（默认）,  1 
 MODE数据库主备集群节点的角色，standard|primary|secondary   
 LOCALIP本节点使用的IP地址，用于集群时指定IP或者地址  
 PAIRENAME集群对端数据库实例名称，默认gbase02  
-PAIREIP集群对端节点的IP地址，用于集群时指定IP或者地址    
+PAIREIP集群对端节点的IP地址，用于集群时指定IP或者地址  
+
+docker参数:  
+-p 指定端口映射  
+--name 指定容器名称  
+--hostname 指定容器主机名称  
+--mac-address 指定容器使用的网卡使用的mac地址（这里使用私有）  
+--network 指定使用的自定义网络名称  
+--ip 指定使用的自定义网络IP地址  
+--privileged 指定容器是否允许使用特权模式（映射目录需要）  
+-v 映射目录  
 
 ## 数据库连接(JDBC)  
 JDBC JAR：  

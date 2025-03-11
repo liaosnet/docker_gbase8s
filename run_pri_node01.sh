@@ -3,6 +3,7 @@
 docker run -d -p 19188:9088 \
   --network mynetwork --ip 172.20.0.21 \
   --name node01 --hostname node01 \
+  --mac-address F0-F0-69-F0-F0-01 \
   --privileged=true \
   -v /data/gbase_pri:/opt/gbase/data \
   -e SERVERNAME=gbase01 \
