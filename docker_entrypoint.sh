@@ -40,6 +40,7 @@ SERVERNAME=${SERVERNAME:-gbase01}
 _loginfo "GBASEDBTSERVER : ${SERVERNAME}"
 HADINIT=1
 
+INSTALL_DIR=/opt/gbase
 # cpu mem
 SYSCPU=$(awk '/^processor/{p++}END{print p}' /proc/cpuinfo)
 SYSMEM=$(awk '/^MemTotal:/{printf("%d",$(NF-1)/1024)}' /proc/meminfo)
@@ -63,9 +64,9 @@ fi
 _loginfo "Number of memory used: ${ENVMEM} MB"
 if [ ${ENVADT} -eq 1 ]; then
   _loginfo "Database start with audit."
-  sed -i "s#^ADTMODE.*#ADTMODE 7#g" /opt/gbase/aaodir/adtcfg
+  sed -i "s#^ADTMODE.*#ADTMODE 7#g" ${INSTALL_DIR}/aaodir/adtcfg
 else
-  sed -i "s#^ADTMODE.*#ADTMODE 0#g" /opt/gbase/aaodir/adtcfg
+  sed -i "s#^ADTMODE.*#ADTMODE 0#g" ${INSTALL_DIR}/aaodir/adtcfg
 fi
 
 # for cluster hac, accept: standard|primary|secondary
@@ -86,21 +87,21 @@ if [ ! x"${ENVMODE}" = "xstandard" ]; then
 fi
 # for cluster hac end.
 
-if [ -d /opt/gbase/data ]; then
-  chown gbasedbt:gbasedbt /opt/gbase/data
-  chmod 755 /opt/gbase/data
+if [ -d ${INSTALL_DIR}/data ]; then
+  chown gbasedbt:gbasedbt ${INSTALL_DIR}/data
+  chmod 755 ${INSTALL_DIR}/data
 fi
 
 _loginfo "Unarchive datafiles."
-if [ ! -f /opt/gbase/data/rootchk ]; then
-  if [ -f /opt/gbase/temp/data.tar.gz ]; then
-    tar -zxf /opt/gbase/temp/data.tar.gz -C /opt/gbase/data/
+if [ ! -f ${INSTALL_DIR}/data/rootchk ]; then
+  if [ -f ${INSTALL_DIR}/temp/data.tar.gz ]; then
+    tar -zxf ${INSTALL_DIR}/temp/data.tar.gz -C ${INSTALL_DIR}/data/
   fi
   HADINIT=0
 fi
 
 _loginfo "Optimize parameters for Database."
-CFGFILE=/opt/gbase/etc/onconfig.gbase01
+CFGFILE=${INSTALL_DIR}/etc/onconfig.gbase01
 sed -i "s/^VPCLASS cpu.*/VPCLASS cpu,num=${ENVCPU}/g" $CFGFILE
 
 if [ ${ENVMEM} -lt 2048 ]; then
@@ -159,47 +160,47 @@ if [ ! x"${ENVMODE}" = "xstandard" ]; then
   sed -i "s#^DRAUTO.*#DRAUTO 1#g" $CFGFILE
   sed -i "s#^HA_ALIAS.*#HA_ALIAS ${SERVERNAME}#g" $CFGFILE
   sed -i "s#^REMOTE_SERVER_CFG.*#REMOTE_SERVER_CFG host.trust#g" $CFGFILE
-  if [ ! -f /opt/gbase/etc/host.trust ]; then
-    echo "+ gbasedbt" > /opt/gbase/etc/host.trust
-    chown gbasedbt:gbasedbt /opt/gbase/etc/host.trust
-    chmod 644 /opt/gbase/etc/host.trust
+  if [ ! -f ${INSTALL_DIR}/etc/host.trust ]; then
+    echo "+ gbasedbt" > ${INSTALL_DIR}/etc/host.trust
+    chown gbasedbt:gbasedbt ${INSTALL_DIR}/etc/host.trust
+    chmod 644 ${INSTALL_DIR}/etc/host.trust
   fi
 
-  if [ ! -f /opt/gbase/etc/sqlhosts ]; then
+  if [ ! -f ${INSTALL_DIR}/etc/sqlhosts ]; then
     _loginfo "Build GBASEDBTSQLHOSTS."
     if [ x"${ENVMODE}" = "xprimary" ]; then
-      cat <<EOF > /opt/gbase/etc/sqlhosts
+      cat <<EOF > ${INSTALL_DIR}/etc/sqlhosts
 gdb	group		-		-	i=1,e=${ENVPAIRENAME}
 ${SERVERNAME}	onsoctcp	${LOCALIP}	9088	g=gdb
 ${ENVPAIRENAME}	onsoctcp	${PAIREIP}	9088	g=gdb
 EOF
     else
-      cat <<EOF > /opt/gbase/etc/sqlhosts
+      cat <<EOF > ${INSTALL_DIR}/etc/sqlhosts
 gdb	group           -               -       i=1,e=${SERVERNAME}
 ${ENVPAIRENAME}	onsoctcp        ${PAIREIP}      9088    g=gdb
 ${SERVERNAME}	onsoctcp        ${LOCALIP}      9088    g=gdb
 EOF
     fi
-    chown gbasedbt:gbasedbt /opt/gbase/etc/sqlhosts
-    chmod 644 /opt/gbase/etc/sqlhosts
+    chown gbasedbt:gbasedbt ${INSTALL_DIR}/etc/sqlhosts
+    chmod 644 ${INSTALL_DIR}/etc/sqlhosts
   fi 
 else
-  if [ ! -f /opt/gbase/etc/sqlhosts ]; then
-    echo "${SERVERNAME} onsoctcp 0.0.0.0 9088" > /opt/gbase/etc/sqlhosts
-    chown gbasedbt:gbasedbt /opt/gbase/etc/sqlhosts
-    chmod 644 /opt/gbase/etc/sqlhosts
+  if [ ! -f ${INSTALL_DIR}/etc/sqlhosts ]; then
+    echo "${SERVERNAME} onsoctcp 0.0.0.0 9088" > ${INSTALL_DIR}/etc/sqlhosts
+    chown gbasedbt:gbasedbt ${INSTALL_DIR}/etc/sqlhosts
+    chmod 644 ${INSTALL_DIR}/etc/sqlhosts
   fi
 fi
 
 # check owner for oninit
-ONOWNER=$(ls -al /opt/gbase/bin/oninit | awk '{print $3}')
-ONGROUP=$(ls -al /opt/gbase/bin/oninit | awk '{print $4}')
+ONOWNER=$(ls -al ${INSTALL_DIR}/bin/oninit | awk '{print $3}')
+ONGROUP=$(ls -al ${INSTALL_DIR}/bin/oninit | awk '{print $4}')
 if [ x"$ONOWNER" = xroot -a x"$ONGROUP" = xgbasedbt ]; then
   _loginfo "Check owner and group for oninit."  
 else
   _loginfo "Change owner and group for software."
-  cd /opt/gbase && sh RUNasroot.installserver >/dev/null 2>&1
-  cd /opt/gbase && find . -nouser | xargs chown gbasedbt:gbasedbt
+  cd ${INSTALL_DIR} && sh RUNasroot.installserver >/dev/null 2>&1
+  cd ${INSTALL_DIR} && find . -nouser | xargs chown gbasedbt:gbasedbt
   cd /home && chown -R gbasedbt:gbasedbt gbase 2>/dev/null
 fi
 
