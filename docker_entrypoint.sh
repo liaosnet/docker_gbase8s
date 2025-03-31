@@ -3,7 +3,7 @@
 # FILENAME: docker_entrypoint.sh
 # FUNCTION: init_start / stop docker
 # WRITE BY: liaosnet@gbasedbt.com 2024-04-02
-# UPDATE  : 2025-03-10
+# UPDATE  : 2025-03-31
 ###########################################################
 export LANG=C
 _loginfo(){
@@ -76,6 +76,7 @@ ENVPAIREIP=${PAIREIP:-172.20.0.22}
 ENVPAIRENAME=${PAIRENAME:-gbase02}
 if [ ! x"${ENVMODE}" = "xprimary" -a ! x"${ENVMODE}" = "xsecondary" ]; then
   ENVMODE="standard"
+  ENVPAIRENAME=""
 fi
 _loginfo "ENVMODE is ${ENVMODE}"
 if [ x"${ENVPAIRENAME}" = x"${SERVERNAME}" ]; then
