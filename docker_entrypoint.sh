@@ -4,6 +4,7 @@
 # FUNCTION: init_start / stop docker
 # WRITE BY: liaosnet@gbasedbt.com 2024-04-02
 # UPDATE  : 2025-03-31
+# UPDATE  : 2025-08-22
 ###########################################################
 export LANG=C
 _loginfo(){
@@ -30,11 +31,6 @@ stop(){
 trap "stop" SIGTERM
 
 init_start(){
-# user password
-USERPASS=${USERPASS:-GBase123$%}
-echo "gbasedbt:${USERPASS}" | chpasswd
-_loginfo "Use password : ${USERPASS}"
-
 # dbservername
 SERVERNAME=${SERVERNAME:-gbase01}
 _loginfo "GBASEDBTSERVER : ${SERVERNAME}"
@@ -99,6 +95,14 @@ if [ ! -f ${INSTALL_DIR}/data/rootchk ]; then
     tar -zxf ${INSTALL_DIR}/temp/data.tar.gz -C ${INSTALL_DIR}/data/
   fi
   HADINIT=0
+fi
+
+# user password
+USERPASS=${USERPASS:-GBase123$%}
+# passwd gbasedt only HADINIT=0
+if [ ${HADINIT} -eq 0 ]; then
+  echo "gbasedbt:${USERPASS}" | chpasswd
+  _loginfo "Use password : ${USERPASS}"
 fi
 
 _loginfo "Optimize parameters for Database."
