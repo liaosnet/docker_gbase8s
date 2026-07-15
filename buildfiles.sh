@@ -6,9 +6,9 @@
 if [ ! $# -eq 1 ]; then
   cat <<EOF
 
-  buildfiles.sh VERSION
+  buildfiles.sh VERSION_ARCH
   
-  VERSION format: MMMMxNN_csdk_ARCH, eg: 3633x31_csdk_x64
+  VERSION_ARCH format: MMMMxNN_csdk_ARCH, eg: 3633x31_csdk_x64
   
 EOF
   exit 1
@@ -19,7 +19,7 @@ VERNAME=$1
 NODENAME=${VERNAME%%_*}
 ARCH=${VERNAME#*_}
 
-if [ x"${ARCH}" = xcsdk_x64 -o x"${ARCH}" = xxcsdk_arm64 ];then
+if [ x"${ARCH}" = xcsdk_x64 -o x"${ARCH}" = xcsdk_arm64 ];then
   PORTNO=${NODENAME/[xa]/}
   PORTNO=${PORTNO:0:5}
 else
@@ -196,5 +196,22 @@ docker run -d -p 19088:9088 \\
 EOF
 
 chmod 755 run_*.sh
+
+# build env.example
+cat <<EOF > env.example
+# env.example
+GBASE_IMAGE_TAG_ALIAS=liaosnet/gbase8s:v8.8_${VERNAME}
+GBASE_CONTAINER_NAME=3652L11
+GBASE_HOSTNAME=3652L11
+GBASE_HOST_PORT=19088
+GBASE_CONTAINER_PORT=9088
+# GBASE_DATA_DIR=/data/docker/data
+GBASE_SERVER_NAME=gbase01
+GBASE_PASSWORD=GBase123$%
+GBASE_CPUS=1
+GBASE_MEMS=2048
+EOF
+
+
 
 exit 0

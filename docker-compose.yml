@@ -1,0 +1,29 @@
+# GBase 8s Docker compose
+
+version: "3"
+
+services:
+  gbase:
+    image: ${GBASE_IMAGE_TAG_ALIAS:-liaosnet/gbase8s:v8.8_3652L11_csdk_x64}
+    container_name: ${GBASE_CONTAINER_NAME:-3652L11}
+    hostname: ${GBASE_HOSTNAME:-3652L11}
+    # 特权模式（GBase8s 要求）
+    privileged: true
+    restart: unless-stopped
+
+    ports:
+      - ${GBASE_HOST_PORT:-19088}:${GBASE_CONTAINER_PORT:-9088}
+
+    volumes:
+      # 数据目录持久化（数据库文件存储在宿主机）
+      - ${GBASE_DATA_DIR:-/data/docker}/data:/opt/gbase/data
+
+    environment:
+      # 数据库服务名称
+      - SERVERNAME=${GBASE_SERVER_NAME:-gbase01}
+      # gbasedbt 用户密码
+      - USERPASS=${GBASE_PASSWORD:-GBase123$%}
+      # CPU、内存限制：默认1CPU,2048M限制  
+      - CPUS=${GBASE_CPUS:-1}
+      - MEMS=${GBASE_MEMS:-2048}
+
