@@ -3,17 +3,17 @@
 ## 使用方式  
 **自行构建镜像**  
 ```shell
-docker build -t liaosnet/gbase8s:v8.8_3633x31_csdk_x64 .
+docker build -t liaosnet/gbase8s:v8.8_${VERNAME} .
 ```
 
 **导入镜像**  
 ```shell
-docker load -i GBase8sV8.8_3633x31_csdk_x64_20xxxxxx.tar
+docker load -i GBase8sV8.8_${VERNAME}_${DATESTR}.tar
 ```
 
 指定标签  
 ```shell
-docker tag liaosnet/gbase8s:v8.8_3633x31_csdk_x64 gbase8sv8.8:3633x31_csdk_x64
+docker tag liaosnet/gbase8s:v8.8_${VERNAME} gbase8sv8.8:${VERNAME}
 ```
 
 示例: 运行镜像  
@@ -33,7 +33,7 @@ docker run -d -p 19088:9088 \
   -e CPUS=1 \
   -e MEMS=2048 \
   -e ADTS=0 \
-  liaosnet/gbase8s:v8.8_3633x31_csdk_x64
+  liaosnet/gbase8s:v8.8_${VERNAME}
 ```
 
 以上参数中：  
@@ -60,6 +60,40 @@ docker参数:
 --privileged 指定容器是否允许使用特权模式（映射目录需要）  
 -v 映射目录  
 
+## cocker-compose部署  
+复制env.example为.env，按需要修改.env中的参数  
+```text
+# env.example
+GBASE_IMAGE_TAG_ALIAS=liaosnet/gbase8s:v8.8_${VERNAME}
+GBASE_CONTAINER_NAME=3652L11
+GBASE_HOSTNAME=3652L11
+GBASE_HOST_PORT=19088
+GBASE_CONTAINER_PORT=9088
+# GBASE_DATA_DIR=/data/docker/data
+GBASE_SERVER_NAME=gbase01
+GBASE_PASSWORD=GBase123$%
+GBASE_CPUS=1
+GBASE_MEMS=2048
+```
+
+以上参数中  
+GBASE_IMAGE_TAG_ALIAS是镜像名称  
+GBASE_CONTAINER_NAME是构建的容器名称  
+GBASE_HOSTNAME是构建的容器内主机名称  
+GBASE_HOST_PORT是容器外部映射端口  
+GBASE_CONTAINER_PORT是数据库使用的端口  
+GBASE_DATA_DIR是映射宿主机目录，对应容器的/opt/gbase/data数据目录  
+GBASE_SERVER_NAME是数据库实例名称  
+GBASE_PASSWORD是gbasedbt用户密码  
+GBASE_CPUS限制容器内数据库使用的cpu数量  
+GBASE_MEMS限制容器内数据库使用的内存总量  
+
+执行编排   
+```shell
+docker-compose up -d 
+```
+
+
 ## 数据库连接(JDBC)  
 JDBC JAR：  
 类名：com.gbasedbt.jdbc.Driver  
@@ -73,6 +107,6 @@ JDBC JAR：
 <dependency>
     <groupId>com.gbasedbt</groupId>
     <artifactId>jdbc</artifactId>
-    <version>3.6.3.33</version>
+    <version>${JDBCVERSION}</version>
 </dependency>
 ```
