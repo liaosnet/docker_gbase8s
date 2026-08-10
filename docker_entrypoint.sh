@@ -4,7 +4,7 @@
 # FUNCTION: init_start / stop docker
 # WRITE BY: liaosnet@gbasedbt.com 2024-04-02
 # UPDATE  : 2025-03-31
-# UPDATE  : 2025-08-22
+# UPDATE  : 2026-08-10
 ###########################################################
 export LANG=C
 _loginfo(){
@@ -128,7 +128,7 @@ elif [ ${ENVMEM} -le 8192 ]; then
   CFG_16KPOOL=100000
 elif [ ${ENVMEM} -le 32768 ]; then
   MUTI=$(expr ${ENVMEM} / 8000)
-  [ $MUTI -eq 0 ] && MUTI=2
+  [ $MUTI -lt 2 ] && MUTI=2
   CFG_LOCKS=5000000
   CFG_SHMVIRTSIZE=$(awk -v n="$MUTI" 'BEGIN{print (n-1)*1024000}')
   CFG_2KPOOL=500000
