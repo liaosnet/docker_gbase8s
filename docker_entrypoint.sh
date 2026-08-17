@@ -4,7 +4,7 @@
 # FUNCTION: init_start / stop docker
 # WRITE BY: liaosnet@gbasedbt.com 2024-04-02
 # UPDATE  : 2025-03-31
-# UPDATE  : 2026-08-10
+# UPDATE  : 2026-08-17
 ###########################################################
 export LANG=C
 _loginfo(){
@@ -43,6 +43,8 @@ SYSMEM=$(awk '/^MemTotal:/{printf("%d",$(NF-1)/1024)}' /proc/meminfo)
 ENVCPU=${CPUS:-1}
 ENVMEM=${MEMS:-2048}
 ENVADT=${ADTS:-0}
+# support mvcc
+MV_SPT=${MV_SPT:-1}
 if [ ${SYSCPU:-1} -le ${ENVCPU} ]; then
   ENVCPU=${SYSCPU}
 fi
@@ -119,28 +121,34 @@ elif [ ${ENVMEM} -lt 4096 ]; then
   CFG_SHMVIRTSIZE=512000
   CFG_2KPOOL=50000
   CFG_16KPOOL=20000 
-elif [ ${ENVMEM} -le 8192 ]; then
-  MUTI=$(expr ${ENVMEM} / 2000)
-  [ $MUTI -eq 0 ] && MUTI=1
+elif [ ${NUMMEM} -le 8192 ]; then
+  # mem less then 8G
   CFG_LOCKS=1000000
   CFG_SHMVIRTSIZE=512000
   CFG_2KPOOL=500000
   CFG_16KPOOL=100000
-elif [ ${ENVMEM} -le 32768 ]; then
-  MUTI=$(expr ${ENVMEM} / 8000)
-  [ $MUTI -lt 2 ] && MUTI=2
+elif [ ${NUMMEM} -le 32768 ]; then
+  # mem >8G && < 32G, use 2k & 16k buffpool
+  MUTI=$((${NUMMEM} / 4000))
+  [ ${MUTI} -lt 2 ] && MUTI=2
   CFG_LOCKS=5000000
-  CFG_SHMVIRTSIZE=$(awk -v n="$MUTI" 'BEGIN{print (n-1)*1024000}')
+  CFG_SHMVIRTSIZE=$((${MUTI} * 512000))
   CFG_2KPOOL=500000
-  CFG_16KPOOL=$(awk -v n="$MUTI" 'BEGIN{print (n-1)*200000}')
+  CFG_16KPOOL=$((${MUTI} * 100000))
 else
   CFG_LOCKS=5000000
   CFG_SHMVIRTSIZE=4096000
   CFG_2KPOOL=1000000
   CFG_16KPOOL=1000000
 fi
-CFG_SHMADD=$(expr ${CFG_SHMVIRTSIZE:-1024000} / 4)
-CFG_SHMTOTAL=$(expr ${ENVMEM} \* 900)
+CFG_SHMADD=$((${CFG_SHMVIRTSIZE:-1024000} / 4))
+CFG_SHMTOTAL=$((${NUMMEM} * 900))
+
+if [ ${MV_SPT} -eq 1 ]; then
+  CFG_2KPOOL=$((${CFG_2KPOOL} / 2))
+  CFG_16KPOOL=$((${CFG_16KPOOL} / 2))
+  CFG_SHMADD=$((${CFG_SHMADD} / 4))
+fi
 
 sed -i "s#^DS_TOTAL_MEMORY.*#DS_TOTAL_MEMORY 1024000#g" $CFGFILE
 sed -i "s#^DS_NONPDQ_QUERY_MEM.*#DS_NONPDQ_QUERY_MEM 256000#g" $CFGFILE
