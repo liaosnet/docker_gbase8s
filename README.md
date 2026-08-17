@@ -60,6 +60,8 @@ docker参数:
 --privileged 指定容器是否允许使用特权模式（映射目录需要）  
 -v 映射目录  
 
+注：某些系统中，可能需要使用--network host方式共用宿主机物理IP资源  
+
 ## cocker-compose部署  
 复制env.example为.env，按需要修改.env中的参数  
 ```text
