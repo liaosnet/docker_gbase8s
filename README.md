@@ -2,12 +2,16 @@
 
 ## 使用方式  
 **自行构建镜像**  
+自行构建镜像使用的压缩包文件名一般为：版本号_架构_日期.tar.gz (如：3652L11_csdk_x64_20260713.tar.gz)  
 ```shell
-docker build -t liaosnet/gbase8s:v8.8_${VERNAME} .
+tar -zxvf 版本号_架构_日期.tar.gz  
+docker build -t liaosnet/gbase8s:v8.8_${VERNAME} .  
 ```
 
 **导入镜像**  
+通过save保存的镜像的压缩包文件名一般为：GBase8s大版本号_版本号_架构_日期.tar.gz(如：GBase8sV8.8_3652L11_csdk_x64_20260713.tar.gz)  
 ```shell
+tar -zxvf GBase8s大版本号_版本号_架构_日期.tar.gz
 docker load -i GBase8sV8.8_${VERNAME}_${DATESTR}.tar
 ```
 

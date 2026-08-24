@@ -2,6 +2,7 @@
 # filename: buildfiles.sh
 # function: build Dockerfiles, README.md, run_*.sh
 # write by: liaosnet@gbasedbt.com 2025-10-31
+# update  : 2026-08-24
 
 if [ ! $# -eq 1 ]; then
   cat <<EOF
@@ -44,18 +45,22 @@ cat <<EOF > README.md
 
 ## 使用方式  
 **自行构建镜像**  
+自行构建镜像使用的压缩包文件名一般为：版本号_架构_日期.tar.gz (如：3652L11_csdk_x64_20260713.tar.gz)  
 \`\`\`shell
-docker build -t liaosnet/gbase8s:v8.8_${VERNAME} .
+tar -zxvf 版本号_架构_日期.tar.gz  
+docker build -t liaosnet/gbase8s:v8.8_\${VERNAME} .  
 \`\`\`
 
 **导入镜像**  
+通过save保存的镜像的压缩包文件名一般为：GBase8s大版本号_版本号_架构_日期.tar.gz(如：GBase8sV8.8_3652L11_csdk_x64_20260713.tar.gz)  
 \`\`\`shell
-docker load -i GBase8sV8.8_${VERNAME}_20xxxxxx.tar
+tar -zxvf GBase8s大版本号_版本号_架构_日期.tar.gz
+docker load -i GBase8sV8.8_\${VERNAME}_\${DATESTR}.tar
 \`\`\`
 
 指定标签  
 \`\`\`shell
-docker tag liaosnet/gbase8s:v8.8_${VERNAME} gbase8sv8.8:${VERNAME}
+docker tag liaosnet/gbase8s:v8.8_\${VERNAME} gbase8sv8.8:\${VERNAME}
 \`\`\`
 
 示例: 运行镜像  
@@ -75,7 +80,7 @@ docker run -d -p 19088:9088 \\
   -e CPUS=1 \\
   -e MEMS=2048 \\
   -e ADTS=0 \\
-  liaosnet/gbase8s:v8.8_${VERNAME}
+  liaosnet/gbase8s:v8.8_\${VERNAME}
 \`\`\`
 
 以上参数中：  
@@ -102,6 +107,42 @@ docker参数:
 --privileged 指定容器是否允许使用特权模式（映射目录需要）  
 -v 映射目录  
 
+注：某些系统中，可能需要使用--network host方式共用宿主机物理IP资源  
+
+## cocker-compose部署  
+复制env.example为.env，按需要修改.env中的参数  
+\`\`\`text
+# env.example
+GBASE_IMAGE_TAG_ALIAS=liaosnet/gbase8s:v8.8_\${VERNAME}
+GBASE_CONTAINER_NAME=3652L11
+GBASE_HOSTNAME=3652L11
+GBASE_HOST_PORT=19088
+GBASE_CONTAINER_PORT=9088
+# GBASE_DATA_DIR=/data/docker/data
+GBASE_SERVER_NAME=gbase01
+GBASE_PASSWORD=GBase123$%
+GBASE_CPUS=1
+GBASE_MEMS=2048
+\`\`\`
+
+以上参数中  
+GBASE_IMAGE_TAG_ALIAS是镜像名称  
+GBASE_CONTAINER_NAME是构建的容器名称  
+GBASE_HOSTNAME是构建的容器内主机名称  
+GBASE_HOST_PORT是容器外部映射端口  
+GBASE_CONTAINER_PORT是数据库使用的端口  
+GBASE_DATA_DIR是映射宿主机目录，对应容器的/opt/gbase/data数据目录  
+GBASE_SERVER_NAME是数据库实例名称  
+GBASE_PASSWORD是gbasedbt用户密码  
+GBASE_CPUS限制容器内数据库使用的cpu数量  
+GBASE_MEMS限制容器内数据库使用的内存总量  
+
+执行编排   
+\`\`\`shell
+docker-compose up -d 
+\`\`\`
+
+
 ## 数据库连接(JDBC)  
 JDBC JAR：  
 类名：com.gbasedbt.jdbc.Driver  
@@ -115,7 +156,7 @@ JDBC JAR：
 <dependency>
     <groupId>com.gbasedbt</groupId>
     <artifactId>jdbc</artifactId>
-    <version>3.6.3.33</version>
+    <version>3.6.5.21</version>
 </dependency>
 \`\`\`
 EOF
